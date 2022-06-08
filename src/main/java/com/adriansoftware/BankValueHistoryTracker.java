@@ -232,7 +232,7 @@ public class BankValueHistoryTracker
 	{
 		clientThread.invokeLater(() ->
 		{
-			int currentBankTab = client.getVar(Varbits.CURRENT_BANK_TAB);
+			int currentBankTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 			LocalDateTime lastEntry = getLastDataEntry(client.getUsername(), currentBankTab);
 			LocalDateTime nextUpdateTime = LocalDateTime.of(0, 1, 1, 0, 0);
 			if (lastEntry != null)
@@ -252,7 +252,7 @@ public class BankValueHistoryTracker
 				BankValueHistoryTracker.this.add(client.getUsername(),
 					BankValue
 						.builder()
-						.tab(client.getVar(Varbits.CURRENT_BANK_TAB))
+						.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
 						.bankValue(bankCalculation.calculate(getBankTabItems()))
 						.build());
 
@@ -285,7 +285,7 @@ public class BankValueHistoryTracker
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVar(Varbits.CURRENT_BANK_TAB);
+		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 
 		if (currentTab > 0)
 		{
@@ -293,10 +293,10 @@ public class BankValueHistoryTracker
 
 			for (int i = currentTab - 1; i > 0; i--)
 			{
-				startIndex += client.getVar(TAB_VARBITS.get(i - 1));
+				startIndex += client.getVarbitValue(TAB_VARBITS.get(i - 1));
 			}
 
-			int itemCount = client.getVar(TAB_VARBITS.get(currentTab - 1));
+			int itemCount = client.getVarbitValue(TAB_VARBITS.get(currentTab - 1));
 			return Arrays.copyOfRange(items, startIndex, startIndex + itemCount);
 		}
 
