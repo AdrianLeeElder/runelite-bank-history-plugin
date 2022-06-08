@@ -26,12 +26,18 @@ package com.adriansoftware;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.inject.Provides;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,8 +79,13 @@ public class BankValueHistoryTracker
 
 	private static final File HISTORY_CACHE;
 	private static final Gson GSON =
-		RuneLiteAPI.GSON.newBuilder().registerTypeAdapter(BankValueHistoryContainer.class,
-			new BankValueHistoryDeserializer()).create();
+			RuneLiteAPI.GSON.newBuilder().registerTypeAdapter(BankValueHistoryContainer.class,
+					new BankValueHistoryDeserializer()).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+				@Override
+				public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+					return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+				}
+			}).create();
 	private static final String EXTENTION = ".json";
 
 	@Inject
