@@ -149,15 +149,6 @@ public class BankHistoryPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onScriptCallbackEvent(ScriptCallbackEvent event)
-		{
-		if ("setBankTitle".equals(event.getEventName()))
-		{
-			tracker.addEntry();
-		}
-	}
-
-	@Subscribe
 	public void onWidgetLoaded(final WidgetLoaded event) throws InvocationTargetException, InterruptedException {
 		if (event.getGroupId() == WidgetID.BANK_GROUP_ID)
 		{
@@ -178,6 +169,7 @@ public class BankHistoryPlugin extends Plugin
 		if (event.getGroupId() == WidgetID.BANK_GROUP_ID) {
 			log.debug("onWidgetClosed: Bank closed");
 			bankHistoryPanel.setDatasetButton(false);
+			tracker.addEntry();
 		}
 	}
 
