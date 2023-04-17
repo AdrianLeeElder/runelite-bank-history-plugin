@@ -266,7 +266,7 @@ public class BankValueHistoryTracker
 						BankValue
 							.builder()
 							.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
-							.bankValue(bankCalculation.calculate(getBankTabItems()))
+							.bankValue(bankCalculation.calculate(items))
 							.build());
 				}
 
