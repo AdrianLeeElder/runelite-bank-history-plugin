@@ -26,12 +26,18 @@ package com.adriansoftware;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.inject.Provides;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,8 +79,13 @@ public class BankValueHistoryTracker
 
 	private static final File HISTORY_CACHE;
 	private static final Gson GSON =
-		RuneLiteAPI.GSON.newBuilder().registerTypeAdapter(BankValueHistoryContainer.class,
-			new BankValueHistoryDeserializer()).create();
+			RuneLiteAPI.GSON.newBuilder().registerTypeAdapter(BankValueHistoryContainer.class,
+					new BankValueHistoryDeserializer()).registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
+				@Override
+				public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+					return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+				}
+			}).create();
 	private static final String EXTENTION = ".json";
 
 	@Inject
@@ -232,7 +243,7 @@ public class BankValueHistoryTracker
 	{
 		clientThread.invokeLater(() ->
 		{
-			int currentBankTab = client.getVar(Varbits.CURRENT_BANK_TAB);
+			int currentBankTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 			LocalDateTime lastEntry = getLastDataEntry(client.getUsername(), currentBankTab);
 			LocalDateTime nextUpdateTime = LocalDateTime.of(0, 1, 1, 0, 0);
 			if (lastEntry != null)
@@ -251,13 +262,13 @@ public class BankValueHistoryTracker
 			{
 				Item[] items = getBankTabItems();
 				if (items != null) {
-					BankValueHistoryTracker.this.add(client.getUsername(),
-							BankValue
-									.builder()
-									.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
-									.bankValue(bankCalculation.calculate(items))
-									.build());
-				}
+				  BankValueHistoryTracker.this.add(client.getUsername(),
+					  BankValue
+					  	.builder()
+						  .tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
+					  	.bankValue(bankCalculation.calculate(getBankTabItems()))
+						  .build());
+        }
 
 				if (callback != null)
 				{
@@ -288,7 +299,7 @@ public class BankValueHistoryTracker
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVar(Varbits.CURRENT_BANK_TAB);
+		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
 
 		if (currentTab > 0)
 		{
@@ -296,10 +307,10 @@ public class BankValueHistoryTracker
 
 			for (int i = currentTab - 1; i > 0; i--)
 			{
-				startIndex += client.getVar(TAB_VARBITS.get(i - 1));
+				startIndex += client.getVarbitValue(TAB_VARBITS.get(i - 1));
 			}
 
-			int itemCount = client.getVar(TAB_VARBITS.get(currentTab - 1));
+			int itemCount = client.getVarbitValue(TAB_VARBITS.get(currentTab - 1));
 			return Arrays.copyOfRange(items, startIndex, startIndex + itemCount);
 		}
 
