@@ -262,13 +262,13 @@ public class BankValueHistoryTracker
 			{
 				Item[] items = getBankTabItems();
 				if (items != null) {
-				  BankValueHistoryTracker.this.add(client.getUsername(),
-					  BankValue
-					  	.builder()
-						  .tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
-					  	.bankValue(bankCalculation.calculate(getBankTabItems()))
-						  .build());
-        }
+					BankValueHistoryTracker.this.add(client.getUsername(),
+						BankValue
+							.builder()
+							.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
+							.bankValue(bankCalculation.calculate(getBankTabItems()))
+							.build());
+				}
 
 				if (callback != null)
 				{
