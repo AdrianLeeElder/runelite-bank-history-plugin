@@ -260,12 +260,15 @@ public class BankValueHistoryTracker
 
 			if (force || lastEntry == null || LocalDateTime.now().isAfter(nextUpdateTime))
 			{
-				BankValueHistoryTracker.this.add(client.getUsername(),
-					BankValue
-						.builder()
-						.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
-						.bankValue(bankCalculation.calculate(getBankTabItems()))
-						.build());
+				Item[] items = getBankTabItems();
+				if (items != null) {
+					BankValueHistoryTracker.this.add(client.getUsername(),
+						BankValue
+							.builder()
+							.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
+							.bankValue(bankCalculation.calculate(items))
+							.build());
+				}
 
 				if (callback != null)
 				{
