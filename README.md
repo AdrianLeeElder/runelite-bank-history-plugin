@@ -1,4 +1,4 @@
-
+This repository is not in use please go to https://github.com/Adam-/runelite-plugins/tree/bank-value-tracker to make changes to this plugin
 # runelite-bank-history-plugin
 A runelite plugin for showing bank value over time. It's currently in the alpha stage, so please feel free to request features/report bugs in Github's issue tracker.
 
