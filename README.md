@@ -33,10 +33,10 @@ Please consider [buying me a coffee](https://www.buymeacoffee.com/c4dSqRC) if yo
 
 3. Configure the client to run with the `-ea` open under `VM Options`. 
     - Go to `Run > Edit Configurations`.
-    - Under `Application` you should see a target for `com.adriansoftware.ExamplePluginTest`. Click on it.
+    - Under `Application` you should see a target for `com.adriansoftware.BankHistoryPluginTest`. Click on it.
     - Look for the `Modify Options...` drop-down button and click on it.
     - In the drop-down menu list, click on `Add VM Options`. This will add the VM Options text box to the page.
     - In the new text box for `VM Options`, add the following flag: `-ea`.
 
 4. Run the project using the `Run > Run...` command. If asked which configuration to run, select
-   `com.adriansoftware.ExamplePluginTest`.
+   `com.adriansoftware.BankHistoryPluginTest`.
