@@ -101,223 +101,235 @@ public class BankHistoryPanel extends PluginPanel
 
 	private void init(String username, boolean isNewWindow)
 	{
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-		setBorder(new EmptyBorder(10, 10, 10, 10));
-		Set<String> accounts = getAccounts(username);
+		if (username.isEmpty()) {
+			String html =
+					"<html>No account data found.<br/>" +
+							"Log in and open the bank to start<br/>" +
+							"tracking!<br/>" +
+							"</html>";
+			JLabel label = new JLabel(html);
+			label.setForeground(ColorScheme.GRAND_EXCHANGE_PRICE);
+			label.setHorizontalAlignment(JLabel.CENTER);
+			add(label, BorderLayout.NORTH);
+		} else {
+			setBackground(ColorScheme.DARK_GRAY_COLOR);
+			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+			setBorder(new EmptyBorder(10, 10, 10, 10));
+			Set<String> accounts = getAccounts(username);
 
-		//wraps all user ui components to set a maximum height
-		JPanel uiWrapperPanel = new JPanel();
-		uiWrapperPanel.setLayout(new BoxLayout(uiWrapperPanel, BoxLayout.PAGE_AXIS));
-		uiWrapperPanel.setMaximumSize(new Dimension(1280, 500));
+			//wraps all user ui components to set a maximum height
+			JPanel uiWrapperPanel = new JPanel();
+			uiWrapperPanel.setLayout(new BoxLayout(uiWrapperPanel, BoxLayout.PAGE_AXIS));
+			uiWrapperPanel.setMaximumSize(new Dimension(1280, 500));
 
-		//account selection
-		JComboBox<String> accountSelectionCombo = new JComboBox<>(new Vector<>(accounts));
-		JCheckBox accountSelectionVisible = new JCheckBox("Show accounts");
-		accountSelectionVisible.setSelected(config.getShowAccounts());
-		accountSelectionVisible.addItemListener((event) -> {
-			accountSelectionCombo.setVisible(accountSelectionVisible.isSelected());
-		});
+			//account selection
+			JComboBox<String> accountSelectionCombo = new JComboBox<>(new Vector<>(accounts));
+			JCheckBox accountSelectionVisible = new JCheckBox("Show accounts");
+			accountSelectionVisible.setSelected(config.getShowAccounts());
+			accountSelectionVisible.addItemListener((event) -> {
+				accountSelectionCombo.setVisible(accountSelectionVisible.isSelected());
+			});
 
-		accountSelectionVisible.setFocusPainted(false);
+			accountSelectionVisible.setFocusPainted(false);
 
-		accountSelectionCombo.addItemListener((change) ->
-		{
-			updateDataset(change.getItem().toString());
-		});
-
-		String account = config.getDefaultAccount();
-
-		//Simple Date selection
-		JComboBox<String> simpleComboBox =
-			new JComboBox<>(
-				new Vector<>(
-					Stream.of(SimpleTimeSelection
-						.values())
-						.map(SimpleTimeSelection::getFormattedName)
-						.collect(Collectors.toList())));
-
-		simpleComboBox
-			.addItemListener(event ->
+			accountSelectionCombo.addItemListener((change) ->
 			{
-				timeSelection = SimpleTimeSelection.of((String) event.getItem());
+				updateDataset(change.getItem().toString());
+			});
+
+			String account = config.getDefaultAccount();
+
+			//Simple Date selection
+			JComboBox<String> simpleComboBox =
+					new JComboBox<>(
+							new Vector<>(
+									Stream.of(SimpleTimeSelection
+													.values())
+											.map(SimpleTimeSelection::getFormattedName)
+											.collect(Collectors.toList())));
+
+			simpleComboBox
+					.addItemListener(event ->
+					{
+						timeSelection = SimpleTimeSelection.of((String) event.getItem());
+						updateDataset((String) accountSelectionCombo.getSelectedItem());
+					});
+
+			JButton showAdvancedButton = new JButton("Advanced");
+			showAdvancedButton.setFocusPainted(false);
+
+			JPanel simpleContainer = new JPanel();
+			simpleContainer.setLayout(new BoxLayout(simpleContainer, BoxLayout.LINE_AXIS));
+			simpleContainer.add(simpleComboBox);
+
+			//Date picker
+			LocalDate today = LocalDate.now();
+			LocalDateTime startOfDay = today.atStartOfDay();
+			Consumer<Void> callback = (t) ->
+			{
+				updateDataset((String) accountSelectionCombo.getSelectedItem());
+			};
+
+			startDatePickerPanel = new DatePickerPanel(startOfDay, "Start Date", callback);
+			toDatePickerPanel = new DatePickerPanel(startOfDay.plusDays(1), "End Date", callback);
+			startDatePickerPanel.init();
+			toDatePickerPanel.init();
+
+			JPanel datePickerContainer = new JPanel();
+			datePickerContainer.setLayout(new BoxLayout(datePickerContainer, BoxLayout.PAGE_AXIS));
+			datePickerContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			datePickerContainer.add(startDatePickerPanel);
+			datePickerContainer.add(Box.createRigidArea(new Dimension(0, 10)));
+			datePickerContainer.add(toDatePickerPanel);
+			datePickerContainer.setVisible(false);
+			showAdvancedButton.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseClicked(MouseEvent e)
+				{
+					boolean visible = datePickerContainer.isVisible();
+					datePickerContainer.setVisible(!visible);
+					simpleContainer.setVisible(visible);
+					if (visible)
+					{
+						showAdvancedButton.setText("Advanced");
+						timeSelection = null;
+					}
+					else
+					{
+						showAdvancedButton.setText("Simple");
+					}
+				}
+			});
+			//Advanced button
+			JPanel advancedContainer = new JPanel();
+			advancedContainer.setLayout(new BorderLayout());
+			advancedContainer.add(showAdvancedButton, BorderLayout.CENTER);
+			advancedContainer.add(Box.createRigidArea(new Dimension(0, 10)), BorderLayout.SOUTH);
+			advancedContainer.setMaximumSize(new Dimension(1280, 45));
+
+			//Open in new window
+			JPanel openInNewWindowContainer = new JPanel();
+			openInNewWindowContainer.setLayout(new BorderLayout());
+			openInNewWindowContainer.add(Box.createRigidArea(new Dimension(0, 10)), BorderLayout.SOUTH);
+			JButton newWindowButton = new JButton("Open In New Window");
+			newWindowButton.setMaximumSize(new Dimension(100, 30));
+			newWindowButton.setFocusPainted(false);
+			newWindowButton.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseReleased(MouseEvent e)
+				{
+					JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(BankHistoryPanel.this);
+					JDialog dialog = new JDialog(frame, "Bank History", false);
+					BankHistoryPanel panel = new BankHistoryPanel();
+					panel.setTracker(tracker);
+					panel.setConfig(config);
+					panel.init(username, true);
+					dialog.setPreferredSize(new Dimension(500, 500));
+
+					dialog.getContentPane().add(panel, BorderLayout.CENTER);
+
+					dialog.setLocationRelativeTo(null);
+					dialog.pack();
+					dialog.setVisible(true);
+				}
+			});
+
+			openInNewWindowContainer.add(newWindowButton, BorderLayout.CENTER);
+
+			//bank tab selection
+			JPanel tabPanel = new JPanel();
+			JComboBox<String> tabSelectionCombo  = new JComboBox<>(DatePickerPanel.getArrayOfIntegers(0, 10, false));
+			tabSelectionCombo.addItemListener((event) ->
+			{
+				currentBankTab = Integer.parseInt((String) event.getItem());
 				updateDataset((String) accountSelectionCombo.getSelectedItem());
 			});
 
-		JButton showAdvancedButton = new JButton("Advanced");
-		showAdvancedButton.setFocusPainted(false);
+			int defaultBankTab = config.getDefaultBankTab();
+			tabSelectionCombo.setSelectedIndex(defaultBankTab);
+			currentBankTab = defaultBankTab;
 
-		JPanel simpleContainer = new JPanel();
-		simpleContainer.setLayout(new BoxLayout(simpleContainer, BoxLayout.LINE_AXIS));
-		simpleContainer.add(simpleComboBox);
+			JLabel tabLabel = new JLabel("Bank Tab: ");
+			tabPanel.setLayout(new BoxLayout(tabPanel, BoxLayout.LINE_AXIS));
+			tabPanel.add(tabLabel);
+			tabPanel.add(tabSelectionCombo);
 
-		//Date picker
-		LocalDate today = LocalDate.now();
-		LocalDateTime startOfDay = today.atStartOfDay();
-		Consumer<Void> callback = (t) ->
-		{
-			updateDataset((String) accountSelectionCombo.getSelectedItem());
-		};
+			//Refresh button
+			JPanel addDatasetPanel = new JPanel();
+			addDatasetPanel.setLayout(new BorderLayout());
 
-		startDatePickerPanel = new DatePickerPanel(startOfDay, "Start Date", callback);
-		toDatePickerPanel = new DatePickerPanel(startOfDay.plusDays(1), "End Date", callback);
-		startDatePickerPanel.init();
-		toDatePickerPanel.init();
-
-		JPanel datePickerContainer = new JPanel();
-		datePickerContainer.setLayout(new BoxLayout(datePickerContainer, BoxLayout.PAGE_AXIS));
-		datePickerContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		datePickerContainer.add(startDatePickerPanel);
-		datePickerContainer.add(Box.createRigidArea(new Dimension(0, 10)));
-		datePickerContainer.add(toDatePickerPanel);
-		datePickerContainer.setVisible(false);
-		showAdvancedButton.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseClicked(MouseEvent e)
-			{
-				boolean visible = datePickerContainer.isVisible();
-				datePickerContainer.setVisible(!visible);
-				simpleContainer.setVisible(visible);
-				if (visible)
-				{
-					showAdvancedButton.setText("Advanced");
-					timeSelection = null;
-				}
-				else
-				{
-					showAdvancedButton.setText("Simple");
-				}
-			}
-		});
-		//Advanced button
-		JPanel advancedContainer = new JPanel();
-		advancedContainer.setLayout(new BorderLayout());
-		advancedContainer.add(showAdvancedButton, BorderLayout.CENTER);
-		advancedContainer.add(Box.createRigidArea(new Dimension(0, 10)), BorderLayout.SOUTH);
-		advancedContainer.setMaximumSize(new Dimension(1280, 45));
-
-		//Open in new window
-		JPanel openInNewWindowContainer = new JPanel();
-		openInNewWindowContainer.setLayout(new BorderLayout());
-		openInNewWindowContainer.add(Box.createRigidArea(new Dimension(0, 10)), BorderLayout.SOUTH);
-		JButton newWindowButton = new JButton("Open In New Window");
-		newWindowButton.setMaximumSize(new Dimension(100, 30));
-		newWindowButton.setFocusPainted(false);
-		newWindowButton.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent e)
-			{
-				JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(BankHistoryPanel.this);
-				JDialog dialog = new JDialog(frame, "Bank History", false);
-				BankHistoryPanel panel = new BankHistoryPanel();
-				panel.setTracker(tracker);
-				panel.setConfig(config);
-				panel.init(username, true);
-				dialog.setPreferredSize(new Dimension(500, 500));
-
-				dialog.getContentPane().add(panel, BorderLayout.CENTER);
-
-				dialog.setLocationRelativeTo(null);
-				dialog.pack();
-				dialog.setVisible(true);
-			}
-		});
-
-		openInNewWindowContainer.add(newWindowButton, BorderLayout.CENTER);
-
-		//bank tab selection
-		JPanel tabPanel = new JPanel();
-		JComboBox<String> tabSelectionCombo  = new JComboBox<>(DatePickerPanel.getArrayOfIntegers(0, 10, false));
-		tabSelectionCombo.addItemListener((event) ->
-		{
-			currentBankTab = Integer.parseInt((String) event.getItem());
-			updateDataset((String) accountSelectionCombo.getSelectedItem());
-		});
-
-		int defaultBankTab = config.getDefaultBankTab();
-		tabSelectionCombo.setSelectedIndex(defaultBankTab);
-		currentBankTab = defaultBankTab;
-
-		JLabel tabLabel = new JLabel("Bank Tab: ");
-		tabPanel.setLayout(new BoxLayout(tabPanel, BoxLayout.LINE_AXIS));
-		tabPanel.add(tabLabel);
-		tabPanel.add(tabSelectionCombo);
-
-		//Refresh button
-		JPanel addDatasetPanel = new JPanel();
-		addDatasetPanel.setLayout(new BorderLayout());
-
-		addDatasetButton = new JButton("Add Entry");
-		setDatasetButton(false);
-		addDatasetButton.setBackground(ColorScheme.GRAND_EXCHANGE_PRICE);
-		addDatasetButton.setForeground(Color.WHITE);
-		addDatasetButton.setFocusPainted(false);
-		addDatasetButton.addActionListener((event) ->
-		{
+			addDatasetButton = new JButton("Add Entry");
 			setDatasetButton(false);
-			tracker.addEntry(true, (s) ->
+			addDatasetButton.setBackground(ColorScheme.GRAND_EXCHANGE_PRICE);
+			addDatasetButton.setForeground(Color.WHITE);
+			addDatasetButton.setFocusPainted(false);
+			addDatasetButton.addActionListener((event) ->
 			{
-				SwingUtilities.invokeLater(() ->
+				setDatasetButton(false);
+				tracker.addEntry(true, (s) ->
 				{
-					updateDataset((String) accountSelectionCombo.getSelectedItem());
-					setDatasetButton(true);
+					SwingUtilities.invokeLater(() ->
+					{
+						updateDataset((String) accountSelectionCombo.getSelectedItem());
+						setDatasetButton(true);
+					});
 				});
 			});
-		});
 
-		addDatasetPanel.add(addDatasetButton, BorderLayout.CENTER);
+			addDatasetPanel.add(addDatasetButton, BorderLayout.CENTER);
 
-		//Refresh button
-		JPanel refreshPanel = new JPanel();
-		refreshPanel.setLayout(new BorderLayout());
+			//Refresh button
+			JPanel refreshPanel = new JPanel();
+			refreshPanel.setLayout(new BorderLayout());
 
-		JButton refreshButton = new JButton("Refresh");
-		refreshButton.setFocusPainted(false);
-		refreshButton.addActionListener((event) ->
-		{
-			updateDataset((String) accountSelectionCombo.getSelectedItem());
-		});
+			JButton refreshButton = new JButton("Refresh");
+			refreshButton.setFocusPainted(false);
+			refreshButton.addActionListener((event) ->
+			{
+				updateDataset((String) accountSelectionCombo.getSelectedItem());
+			});
 
-		refreshPanel.add(refreshButton, BorderLayout.CENTER);
+			refreshPanel.add(refreshButton, BorderLayout.CENTER);
 
-		//render
-		add(uiWrapperPanel);
+			//render
+			add(uiWrapperPanel);
 
-		//add buttons/user interaction components here
-		uiWrapperPanel.add(accountSelectionCombo);
-		uiWrapperPanel.add(accountSelectionVisible);
-		uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-		uiWrapperPanel.add(advancedContainer);
-		uiWrapperPanel.add(simpleContainer);
-		uiWrapperPanel.add(datePickerContainer);
-		uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-		uiWrapperPanel.add(tabPanel);
-		uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-		add(Box.createRigidArea(new Dimension(0, 5)));
+			//add buttons/user interaction components here
+			uiWrapperPanel.add(accountSelectionCombo);
+			uiWrapperPanel.add(accountSelectionVisible);
+			uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+			uiWrapperPanel.add(advancedContainer);
+			uiWrapperPanel.add(simpleContainer);
+			uiWrapperPanel.add(datePickerContainer);
+			uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+			uiWrapperPanel.add(tabPanel);
+			uiWrapperPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+			add(Box.createRigidArea(new Dimension(0, 5)));
 
-		loadGraph(account.isEmpty() ? accounts.stream().findFirst().get() : account);
+			loadGraph(account.isEmpty() ? accounts.stream().findFirst().get() : account);
 
-		// Increase/decrease panel (change) panel
-		// Done after the graph is loaded so we have the data points available
-		JPanel changePanel = new JPanel();
-		changePanel.setLayout(new BorderLayout());
-		changeLabel = getChangeLabelValue();
-		changeLabel.setHorizontalAlignment(JLabel.CENTER);
-		changePanel.add(changeLabel, BorderLayout.CENTER);
-		uiWrapperPanel.add(changePanel);
+			// Increase/decrease panel (change) panel
+			// Done after the graph is loaded so we have the data points available
+			JPanel changePanel = new JPanel();
+			changePanel.setLayout(new BorderLayout());
+			changeLabel = getChangeLabelValue();
+			changeLabel.setHorizontalAlignment(JLabel.CENTER);
+			changePanel.add(changeLabel, BorderLayout.CENTER);
+			uiWrapperPanel.add(changePanel);
 
-		add(Box.createRigidArea(new Dimension(0, 10)));
-		add(addDatasetPanel);
-
-		add(Box.createRigidArea(new Dimension(0, 10)));
-		add(refreshPanel);
-
-		if (!isNewWindow)
-		{
 			add(Box.createRigidArea(new Dimension(0, 10)));
-			add(openInNewWindowContainer);
+			add(addDatasetPanel);
+
+			add(Box.createRigidArea(new Dimension(0, 10)));
+			add(refreshPanel);
+
+			if (!isNewWindow)
+			{
+				add(Box.createRigidArea(new Dimension(0, 10)));
+				add(openInNewWindowContainer);
+			}
 		}
 	}
 

@@ -24,7 +24,6 @@
  */
 package com.adriansoftware;
 
-import com.google.common.base.Strings;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -37,12 +36,10 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 
@@ -78,68 +75,34 @@ public class BankHistoryPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "bank_logo.png");
+		String username = this.tracker.getAvailableUsers().isEmpty() ? "" : this.tracker.getAvailableUsers().get(0);
+		loadPluginPanel(username);
 
-		navButton = NavigationButton.builder()
-			.tooltip("Bank Value History")
-			.icon(icon)
-			.priority(10)
-			.build();
-
-		setActivePanel("");
 		clientToolbar.addNavigation(navButton);
 	}
 
-	private void setActivePanel(String username) {
-		if (!Strings.isNullOrEmpty(username) || hasAccountData()) {
-			if (bankHistoryPanel == null) {
-				log.trace("Setting the active panel to the bank history panel");
-				bankHistoryPanel = injector.getInstance(BankHistoryPanel.class);
-				bankHistoryPanel.init(username);
-				setCurrentPanel(bankHistoryPanel);
-			}
-		} else {
-			log.trace("Setting the active panel to the default panel");
-			DefaultBankValuePanel panel = new DefaultBankValuePanel();
-			panel.init();
-			setCurrentPanel(panel);
+	private void loadPluginPanel(String username)
+	{
+		if (navButton == null)
+		{
+			bankHistoryPanel = injector.getInstance(BankHistoryPanel.class);
+			bankHistoryPanel.init(username);
+			final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "bank_logo.png");
+			navButton = NavigationButton.builder()
+					.tooltip("Bank Value History")
+					.icon(icon)
+					.priority(5)
+					.panel(bankHistoryPanel)
+					.build();
+
+			this.clientToolbar.addNavigation(navButton);
 		}
-	}
-
-	private void setCurrentPanel(PluginPanel pluginPanel) {
-		if (navButton.getPanel() != pluginPanel) {
-			PluginPanel panel = navButton.getPanel();
-			if (panel == null) {
-				navButton.setPanel(pluginPanel);
-				return;
-			}
-
-			Container con = panel.getParent();
-
-			if (con != null) {
-				navButton.setPanel(pluginPanel);
-				removeExistingPanel(con);
-				con.add(pluginPanel, BorderLayout.NORTH);
-				con.revalidate();
-				con.repaint();
-			}
+		else
+		{
+			this.clientToolbar.removeNavigation(navButton);
+			this.navButton = null;
+			loadPluginPanel(username);
 		}
-	}
-
-	private void removeExistingPanel(Container con) {
-		Component[] comps = con.getComponents();
-		if (comps != null) {
-			for (Component component : comps) {
-				if (component instanceof PluginPanel) {
-					log.trace("Removing plugin panel instance from container");
-					con.remove(component);
-				}
-			}
-		}
-	}
-
-	private boolean hasAccountData() {
-		return !tracker.getAvailableUsers().isEmpty();
 	}
 
 	@Override
@@ -149,24 +112,31 @@ public class BankHistoryPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onWidgetLoaded(final WidgetLoaded event) throws InvocationTargetException, InterruptedException {
+	public void onWidgetLoaded(final WidgetLoaded event) throws InvocationTargetException, InterruptedException
+	{
 		if (event.getGroupId() == WidgetID.BANK_GROUP_ID)
 		{
 			log.trace("Player opened the bank");
-			SwingUtilities.invokeAndWait(() -> this.setActivePanel(client.getUsername()));
-			if (isHistoryPanelActive()) {
+			SwingUtilities.invokeAndWait(() -> this.loadPluginPanel(client.getUsername()));
+			if (isHistoryPanelActive())
+			{
 				bankHistoryPanel.setDatasetButton(true);
 			}
 		}
 	}
 
-	private boolean isHistoryPanelActive() {
+
+
+	private boolean isHistoryPanelActive()
+	{
 		return bankHistoryPanel != null && navButton.getPanel() == bankHistoryPanel;
 	}
 
 	@Subscribe
-	public void onWidgetClosed(WidgetClosed event) {
-		if (event.getGroupId() == WidgetID.BANK_GROUP_ID) {
+	public void onWidgetClosed(WidgetClosed event)
+	{
+		if (event.getGroupId() == WidgetID.BANK_GROUP_ID)
+		{
 			log.debug("onWidgetClosed: Bank closed");
 			bankHistoryPanel.setDatasetButton(false);
 			tracker.addEntry();
