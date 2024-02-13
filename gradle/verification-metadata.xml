@@ -3,10 +3,13 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
+
+      <trusted-artifacts>
          <trust group="net.runelite"/>
          <trust group="net.runelite.arn"/>
          <trust group="org.lwjgl"/>
          <trust group="com.google.protobuf"/>
+      </trusted-artifacts>
    </configuration>
    <components>
       <component group="aopalliance" name="aopalliance" version="1.0">
