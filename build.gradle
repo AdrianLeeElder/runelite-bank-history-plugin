@@ -15,7 +15,7 @@ def runeLiteVersion = 'latest.release'
 dependencies {
 	implementation 'jfree:jfreechart:1.0.13'
 	implementation 'net.sourceforge.jdatepicker:jdatepicker:1.3.2'
-	implementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+	compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
 
 	compileOnly 'org.projectlombok:lombok:1.18.4'
 	annotationProcessor 'org.projectlombok:lombok:1.18.4'
