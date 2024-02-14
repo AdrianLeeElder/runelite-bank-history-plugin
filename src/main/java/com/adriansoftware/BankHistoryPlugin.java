@@ -28,6 +28,7 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.*;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -135,7 +136,7 @@ public class BankHistoryPlugin extends Plugin
 	@Subscribe
 	public void onWidgetClosed(WidgetClosed event)
 	{
-		if (event.getGroupId() == WidgetID.BANK_GROUP_ID)
+		if (event.getGroupId() == InterfaceID.BANK)
 		{
 			log.debug("onWidgetClosed: Bank closed");
 			bankHistoryPanel.setDatasetButton(false);
