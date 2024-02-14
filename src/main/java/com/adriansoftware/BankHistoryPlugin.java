@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.InterfaceID;
-import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -115,7 +114,7 @@ public class BankHistoryPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(final WidgetLoaded event) throws InvocationTargetException, InterruptedException
 	{
-		if (event.getGroupId() == WidgetID.BANK_GROUP_ID)
+		if (event.getGroupId() == InterfaceID.BANK)
 		{
 			log.trace("Player opened the bank");
 			SwingUtilities.invokeAndWait(() -> this.loadPluginPanel(client.getUsername()));
