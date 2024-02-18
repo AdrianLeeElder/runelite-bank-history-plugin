@@ -244,7 +244,7 @@ public class BankValueHistoryTracker
 		clientThread.invokeLater(() ->
 		{
 			int currentBankTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
-			LocalDateTime lastEntry = getLastDataEntry(client.getUsername(), currentBankTab);
+			LocalDateTime lastEntry = getLastDataEntry(client.getLocalPlayer().getName(), currentBankTab);
 			LocalDateTime nextUpdateTime = LocalDateTime.of(0, 1, 1, 0, 0);
 			if (lastEntry != null)
 			{
@@ -262,7 +262,7 @@ public class BankValueHistoryTracker
 			{
 				Item[] items = getBankTabItems();
 				if (items != null) {
-					BankValueHistoryTracker.this.add(client.getUsername(),
+					BankValueHistoryTracker.this.add(client.getLocalPlayer().getName(),
 						BankValue
 							.builder()
 							.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
