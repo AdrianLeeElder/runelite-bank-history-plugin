@@ -77,7 +77,6 @@ public class BankHistoryPlugin extends Plugin
 	{
 		String username = this.tracker.getAvailableUsers().isEmpty() ? "" : this.tracker.getAvailableUsers().get(0);
 		loadPluginPanel(username);
-
 		clientToolbar.addNavigation(navButton);
 	}
 
@@ -117,7 +116,7 @@ public class BankHistoryPlugin extends Plugin
 		if (event.getGroupId() == InterfaceID.BANK)
 		{
 			log.trace("Player opened the bank");
-			SwingUtilities.invokeAndWait(() -> this.loadPluginPanel(client.getUsername()));
+			SwingUtilities.invokeAndWait(() -> this.loadPluginPanel(client.getLocalPlayer().getName()));
 			if (isHistoryPanelActive())
 			{
 				bankHistoryPanel.setDatasetButton(true);
