@@ -30,7 +30,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import net.runelite.api.Item;
-import net.runelite.api.ItemID;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.client.game.ItemManager;
 
 class ContainerCalculation
@@ -71,10 +71,10 @@ class ContainerCalculation
 
 			switch (id)
 			{
-				case ItemID.COINS_995:
+				case ItemID.COINS:
 					ge += qty;
 					break;
-				case ItemID.PLATINUM_TOKEN:
+				case ItemID.PLATINUM:
 					ge += qty * 1000L;
 					break;
 				default:

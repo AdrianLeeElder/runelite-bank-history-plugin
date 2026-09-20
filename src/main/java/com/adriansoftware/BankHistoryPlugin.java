@@ -28,8 +28,7 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.*;
-import net.runelite.api.widgets.InterfaceID;
-import net.runelite.client.callback.ClientThread;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -53,9 +52,6 @@ public class BankHistoryPlugin extends Plugin
 {
 	@Inject
 	private Client client;
-
-	@Inject
-	private ClientThread clientThread;
 
 	@Inject
 	private BankValueHistoryTracker tracker;
@@ -86,7 +82,7 @@ public class BankHistoryPlugin extends Plugin
 		{
 			bankHistoryPanel = injector.getInstance(BankHistoryPanel.class);
 			bankHistoryPanel.init(username);
-			final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "bank_logo.png");
+			final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "bank_logo.png");
 			navButton = NavigationButton.builder()
 					.tooltip("Bank Value History")
 					.icon(icon)
@@ -113,7 +109,7 @@ public class BankHistoryPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(final WidgetLoaded event) throws InvocationTargetException, InterruptedException
 	{
-		if (event.getGroupId() == InterfaceID.BANK)
+		if (event.getGroupId() == InterfaceID.BANKMAIN)
 		{
 			log.trace("Player opened the bank");
 			SwingUtilities.invokeAndWait(() -> this.loadPluginPanel(client.getLocalPlayer().getName()));
@@ -134,7 +130,7 @@ public class BankHistoryPlugin extends Plugin
 	@Subscribe
 	public void onWidgetClosed(WidgetClosed event)
 	{
-		if (event.getGroupId() == InterfaceID.BANK)
+		if (event.getGroupId() == InterfaceID.BANKMAIN)
 		{
 			log.debug("onWidgetClosed: Bank closed");
 			bankHistoryPanel.setDatasetButton(false);
