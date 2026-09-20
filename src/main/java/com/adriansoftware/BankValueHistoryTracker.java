@@ -50,10 +50,10 @@ import javax.inject.Inject;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
+import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.Varbits;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -66,15 +66,15 @@ import net.runelite.http.api.RuneLiteAPI;
 public class BankValueHistoryTracker
 {
 	private static final List<Integer> TAB_VARBITS = ImmutableList.of(
-		Varbits.BANK_TAB_ONE_COUNT,
-		Varbits.BANK_TAB_TWO_COUNT,
-		Varbits.BANK_TAB_THREE_COUNT,
-		Varbits.BANK_TAB_FOUR_COUNT,
-		Varbits.BANK_TAB_FIVE_COUNT,
-		Varbits.BANK_TAB_SIX_COUNT,
-		Varbits.BANK_TAB_SEVEN_COUNT,
-		Varbits.BANK_TAB_EIGHT_COUNT,
-		Varbits.BANK_TAB_NINE_COUNT
+		VarbitID.BANK_TAB_1,
+		VarbitID.BANK_TAB_2,
+		VarbitID.BANK_TAB_3,
+		VarbitID.BANK_TAB_4,
+		VarbitID.BANK_TAB_5,
+		VarbitID.BANK_TAB_6,
+		VarbitID.BANK_TAB_7,
+		VarbitID.BANK_TAB_8,
+		VarbitID.BANK_TAB_9
 	);
 
 	private static final File HISTORY_CACHE;
@@ -243,7 +243,7 @@ public class BankValueHistoryTracker
 	{
 		clientThread.invokeLater(() ->
 		{
-			int currentBankTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
+			int currentBankTab = client.getVarbitValue(VarbitID.BANK_CURRENTTAB);
 			LocalDateTime lastEntry = getLastDataEntry(client.getLocalPlayer().getName(), currentBankTab);
 			LocalDateTime nextUpdateTime = LocalDateTime.of(0, 1, 1, 0, 0);
 			if (lastEntry != null)
@@ -265,7 +265,7 @@ public class BankValueHistoryTracker
 					BankValueHistoryTracker.this.add(client.getLocalPlayer().getName(),
 						BankValue
 							.builder()
-							.tab(client.getVarbitValue(Varbits.CURRENT_BANK_TAB))
+							.tab(client.getVarbitValue(VarbitID.BANK_CURRENTTAB))
 							.bankValue(bankCalculation.calculate(items))
 							.build());
 				}
@@ -299,7 +299,7 @@ public class BankValueHistoryTracker
 		}
 
 		final Item[] items = container.getItems();
-		int currentTab = client.getVarbitValue(Varbits.CURRENT_BANK_TAB);
+		int currentTab = client.getVarbitValue(VarbitID.BANK_CURRENTTAB);
 
 		if (currentTab > 0)
 		{
