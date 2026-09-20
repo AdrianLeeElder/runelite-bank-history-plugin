@@ -16,7 +16,7 @@ Please consider [buying me a coffee](https://www.buymeacoffee.com/c4dSqRC) if yo
 - ~~Select data for a specific tab~~
 - ~~Allow customizing when data is stored. It currently happens each time you open
     the bank which isn't ideal.~~
-- Allow values to be displayed in the y-axis as their formatted values (e.g 32.23m).
+- ~~Allow values to be displayed in the y-axis as their formatted values (e.g 32.23m).~~
 - Add user feedback when adding a new data entry/pressing refresh button
 - Switch selected bank tab automatically based on current bank tab (toggle by setting).
 

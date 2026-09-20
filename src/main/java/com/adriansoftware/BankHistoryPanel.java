@@ -24,6 +24,7 @@
  */
 package com.adriansoftware;
 
+import com.adriansoftware.format.CompactDecimalFormat;
 import com.google.inject.Provides;
 
 import java.awt.*;
@@ -54,6 +55,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -411,14 +413,16 @@ public class BankHistoryPanel extends PluginPanel
 		ChartFactory.setChartTheme(StandardChartTheme.createDarknessTheme());
 		chart = ChartFactory.createTimeSeriesChart(
 			null,
-			"Date/time",
-			"Bank Value (mil)",
+			"Date/Time",
+			"Bank Value",
 			dataset,
 			false,
 			true,
 			false);
 
 		XYPlot plot = chart.getXYPlot();
+		((NumberAxis) plot.getRangeAxis()).setNumberFormatOverride(new CompactDecimalFormat());
+
 		XYItemRenderer r = plot.getRenderer();
 		if (r instanceof XYLineAndShapeRenderer)
 		{
